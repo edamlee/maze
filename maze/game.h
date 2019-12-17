@@ -2,6 +2,7 @@
 #define MAZE_GAME_H_
 
 #include <string>
+#include <vector>
 
 enum class Key {
 	kError = -1,
@@ -18,7 +19,6 @@ class Util;
 
 class Game {
   public:
-	static constexpr int kSize = 10;
 	static Game *Instance();
 	Game(const Game &) = delete;
 	Game &operator=(const Game &) = delete;
@@ -38,7 +38,7 @@ class Game {
 	int location_;
 	int item_;
 	bool playing_;
-	double scores_[kSize];
+	std::vector<double> scores_;
 };
 
 #endif
