@@ -8,11 +8,13 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <random>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "util.h"
 
@@ -27,7 +29,6 @@ Game *Game::Instance()
 Game::Game()
 {
 	util_ = Util::Instance();
-	for (int i = 0; i < kSize; ++i) scores_[i] = 0.0;
 }
 
 void Game::DrawTitle() const
@@ -47,13 +48,13 @@ int Game::DrawMenu() const
 	int y = 12;
 
 	util_->MoveCursor(x - 2, y);
-	cout << "> ∞‘¿” Ω√¿€";
+	cout << "> Í≤åÏûÑ ÏãúÏûë";
 
 	util_->MoveCursor(x, y + 1);
-	cout << "∞‘¿” ±‚∑œ";
+	cout << "Í≤åÏûÑ Í∏∞Î°ù";
 
 	util_->MoveCursor(x + 2, y + 2);
-	cout << "¡æ ∑·";
+	cout << "Ï¢Ö Î£å";
 
 	while (true) {
 		switch (KeyState()) {
@@ -131,8 +132,8 @@ void Game::DrawMap()
 {
 	system("CLS");
 
-	for (int i = 0; i < map_.length(); ++i) {
-		switch (map_[i]) {
+	for (auto it = map_.cbegin(); it != prev(map_.cend()); ++it) {
+		switch (*it) {
 			case '0':
 				util_->TextColor(Color::kBlack, Color::kBlack);
 				break;
@@ -140,7 +141,7 @@ void Game::DrawMap()
 				util_->TextColor(Color::kWhite, Color::kWhite);
 				break;
 			case '@':
-				location_ = i;
+				location_ = distance(map_.cbegin(), it);
 				util_->TextColor(Color::kYellow, Color::kBlack);
 				break;
 			case '*':
@@ -150,7 +151,7 @@ void Game::DrawMap()
 				util_->TextColor(Color::kWhite, Color::kBlack);
 				break;
 		}
-		cout << map_[i];
+		cout << *it;
 	}
 }
 
@@ -185,21 +186,17 @@ void Game::Start()
 		}
 	}
 
-	auto end = chrono::system_clock::now();
-	chrono::duration<double> elapse = end - start;
+	auto finish = chrono::system_clock::now();
+	chrono::duration<double> elapse = finish - start;
 
 	util_->MoveCursor(23, 8);
 
 	if (location_ == 1017) {
-		cout << elapse.count() << "√ ";
-		scores_[kSize - 1] = elapse.count();
+		cout << elapse.count() << "Ï¥à";
+		scores_.push_back(elapse.count());
 
-		if (scores_[0] == 0.0) {
-			scores_[0] = scores_[kSize - 1];
-			sort(scores_, scores_ + kSize - 1);
-		} else {
-			sort(scores_, scores_ + kSize);
-		}
+		sort(scores_.begin(), scores_.end());
+		if (scores_.size() == 10) scores_.pop_back();
 	} else {
 		cout << "Game Over";
 	}
@@ -241,17 +238,15 @@ void Game::DrawScore() const
 {
 	system("CLS");
 
-	if (scores_[kSize - 1] == 0.0) {
+	if (scores_.size() == 0) {
 		util_->MoveCursor(10, 1);
-		cout << "±‚∑œ¿Ã æ¯Ω¿¥œ¥Ÿ.";
+		cout << "Í∏∞Î°ùÏù¥ ÏóÜÏäµÎãàÎã§.";
 	} else {
 		int rank = 1;
-		for (int i = 0; i < kSize - 1; ++i) {
-			if (scores_[i] > 0.0) {
-				util_->MoveCursor(10, rank * 2 - 1);
-				cout << rank << "µÓ: " << scores_[i] << "√ ";
-				++rank;
-			}
+		for (auto i : scores_) {
+			util_->MoveCursor(10, rank * 2 - 1);
+			cout << rank << "Îì±: " << i << "Ï¥à";
+			++rank;
 		}
 	}
 
